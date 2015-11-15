@@ -1,23 +1,34 @@
-// Utlizaremos una funciÃ³n anÃ³nima autoejecutable de modo que nuestras variables no sean globales. MÃ¡s info: http://www.formandome.es/javascript/objetos-variables-funciones-javascript/
+// Utlizaremos una función anónima autoejecutable de modo que nuestras variables no sean globales. Más info: http://www.formandome.es/javascript/objetos-variables-funciones-javascript/
 
-(function () {
+function iniciar(){
+//(function () {
     /* ---------------------------------- Variables locales ---------------------------------- */
     //var adapter = new WebSqlAdapter();
     //var adapter = new MemoryAdapter();
     //var adapter = new JSONPAdapter();
    var watchID = null;
   
-  var adapter = new LocalStorageAdapter();
+  /*var adapter = new LocalStorageAdapter();
     adapter.inicializar().done(function () {
         alert("Inicializado: Adaptador de datos");
     });
+*/
 
- document.getElementById("iniciar").addEventListener("click", localizar, false);
- document.getElementById("parar").addEventListener("click", localizarStop, false);
+	
+	$('.bici-jpg').on('click',function(){
+		localizar();
+		return false;
+	});
+	$('.bici-gif').on('click',function(){
+		localizarStop();
+		return false;
+	});
 
 
     function localizar() {
         // Throw an error if no update is received every 30 seconds
+		$('.bici-jpg').hide();
+		$('.bici-gif').show();
         var options = { timeout: 30000, maximumAge:1000, enableHighAccuracy:true };
         watchID = navigator.geolocation.watchPosition(onSuccess, onError, options);
     }
@@ -25,21 +36,16 @@
   function localizarStop() {  
 alert("STOP");
 	navigator.geolocation.clearWatch(watchID);
+		$('.bici-gif').hide();
+		$('.bici-jpg').show();
+		$('.enviar-datos').show();
     }
 
     // onSuccess Geolocation
-    //
+	
     function onSuccess(position) {
-        var element = document.getElementById('resultados');
-        element.innerHTML = 'Latitude: '  + position.coords.latitude      + '<br />' +
-                            'Longitude: ' + position.coords.longitude     + '<br />' +
-		'Altitude: '          + position.coords.altitude          + '\n' +
-          'Accuracy: '          + position.coords.accuracy          + '\n' +
-          'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
-          'Heading: '           + position.coords.heading           + '\n' +
-          'Speed: '             + position.coords.speed             + '\n' +
-          'Timestamp: '         + position.timestamp                + '\n' +
-                            '<hr />'      + element.innerHTML;
+        var coordenadas = document.getElementById('datos-id');
+        coordenadas.innerHTML = coordenadas.innerHTML + '{"lat":'  + position.coords.latitude +',"lon":' + position.coords.longitude  +',"alt":'+ position.coords.altitude + ',"acc":'+ position.coords.accuracy + ',"heading":'+ position.coords.heading + ',"speed":'+ position.coords.speed +',"timestamp":' + position.timestamp + '},';
     }
 
         // onError Callback receives a PositionError object
@@ -50,5 +56,5 @@ alert("STOP");
         }
 
 
- 
-}());
+ };
+//}());

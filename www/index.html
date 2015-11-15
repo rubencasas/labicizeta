@@ -1,25 +1,103 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-</head>
-<body>
-<header>
-<p><button id="iniciar">PEDALEAR</button></p>
-<p><button id="parar">FRENAR</button></p>
+    <head>
+        <title>Quick JQuery Ajax Request</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		
+		
+		<style>
+		body{background-color:#12AAC5; margin: 0;}
+		.enviar-datos{
+			display:none;
+			text-align: center;
+			width: 90%;
+			color: white;
+			background-color: #533220;
+			font-size: 6em;
+			font-family: Arial;
+			padding: 1em 0;
+			border-bottom-right-radius: 15px;
+			border-top-right-radius: 15px;
+	}
+		.bici-gif, .bici-jpg{width:100%;}
+		.bici-gif{display:none}
+		.datos-textarea{ position: absolute;left: -1000px;}
+		</style>
+		
 
-</header>
-<input id='btnBuscar' type="search" placeholder="Introduce futbolista"/>
-<ul id='lstFutbolistas'></ul>
+		
+        <!-- include the jquery lib -->
+        <script type="text/javascript" src="jquery-2.1.1.min.js"></script>
+	    <script type="text/javascript" src="js/app.js"></script>
+        <script type="text/javascript">
+		
+  $(document).ready(function() {
+	
+				iniciar();
+				
+                // fetch where we want to submit the form to
+                var url = 'http://www.lasana.es/labicizeta/guardar-ruta.php';
+				var usuario=1;
 
-<div id='resultados'>
-1111
-</div>
+                // fetch the data for the form
+               // var data = $(formEl).serializeArray();
+				
+				
+				 $('.enviar-datos').on('click', function() {
+					var coordenadas=$('.datos-textarea').val();
+					//eliminamos ultima coma del objeto
+					coordenadas = coordenadas.substr(0,coordenadas.length - 1);
+					coordenadasTotal='['+coordenadas+']';
+					ruta(coordenadasTotal, usuario);
+				 });
+				
+				
+				function ruta(coordenadasTodas, usuario){
+				
+                // setup the ajax request
+                $.ajax({
+						url: url,
+					    type: 'post',
+                        cache: false,
+                        url: url,
+                        //data: $form.serialize(),
+                        data: {'datos': coordenadasTodas, 'user': usuario},
+                        //dataType: 'json',
+                        dataType: 'text',
+                        beforeSend: function() {
+      
+                        },
+                        error: function(response) {
+						console.log('ERROR: '+response);
+						alert('Error ajax')
+                        },
+                        success: function(response) {
+							console.log('petición enviada....')
+							console.log('respuesta: '+response);
+							$('.datos-textarea').val('');
+                        }
+					
+					
+                });
+	
+                // return false so the form does not actually
+                // submit to the page
+                //return false;
 
-<script src="lib/jquery.js"></script>
-<script src="js/adapters/localstorage-adapter.js"></script>
-<script src="js/app.js"></script>
+            }
+			
+    });          
+			
+        </script>
 
-</body>
+    </head>
+    <body>	
+			<img class='bici-jpg' src='img/guy-allen.jpg'>
+			<img class='bici-gif' src='img/guy-allen.gif'>
+
+            <textarea class='datos-textarea' id='datos-id'></textarea>
+			<div class='enviar-datos'>Enviar Datos</div>
+
+
+    </body>
 </html>
