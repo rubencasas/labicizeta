@@ -1,103 +1,77 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-    <head>
-        <title>Quick JQuery Ajax Request</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		
-		
-		<style>
-		body{background-color:#12AAC5; margin: 0;}
-		.enviar-datos{
-			display:none;
-			text-align: center;
-			width: 90%;
-			color: white;
-			background-color: #533220;
-			font-size: 6em;
-			font-family: Arial;
-			padding: 1em 0;
-			border-bottom-right-radius: 15px;
-			border-top-right-radius: 15px;
-	}
-		.bici-gif, .bici-jpg{width:100%;}
-		.bici-gif{display:none}
-		.datos-textarea{ position: absolute;left: -1000px;}
-		</style>
-		
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
 
-		
-        <!-- include the jquery lib -->
-        <script type="text/javascript" src="jquery-2.1.1.min.js"></script>
-	    <script type="text/javascript" src="js/app.js"></script>
-        <script type="text/javascript">
-		
-  $(document).ready(function() {
+    <title>LA BICIZETA - BICICARRIL PARA ZAMORA</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="shortcut icon" href="favicon.ico">
+
+
+	<!-- stylesheets -->
+	<link rel="stylesheet" href="css/style.min.css">
+
+</head>
+ <body>	
+
+
+
+
+<img class='bici-jpg' src='img/guy-allen.jpg'>
+<img class='bici-gif' src='img/guy-allen.gif'>
+
+<div class='mensajes'>
+<p></p>
+</div>
+
+
+<p class='start-stop'></p>
+
+
+<div class='datos'>
+<p class='cronometro'><span class='hour'>00</span>:<span class='minute'>00</span>:<span class='second'>00</span></p>
+<p>Velocidad:<span class='velocidad'></span> Km/h</p>
+<p>Distancia:<span class='distancia'></span> Km</p>
+<p>CO2 ahorrado:<span class='CO2'></span> Kg</p>
+
+
+<button class='botones-ruta guardar-ruta' type="button">ENVIAR</button>
+<button class='botones-ruta reset-ruta' type="button">RESETEAR</button>
+
+</div>
+
+<textarea class='coordenadas-textarea' hidden></textarea>
 	
-				iniciar();
-				
-                // fetch where we want to submit the form to
-                var url = 'http://www.lasana.es/labicizeta/guardar-ruta.php';
-				var usuario=1;
 
-                // fetch the data for the form
-               // var data = $(formEl).serializeArray();
-				
-				
-				 $('.enviar-datos').on('click', function() {
-					var coordenadas=$('.datos-textarea').val();
-					//eliminamos ultima coma del objeto
-					coordenadas = coordenadas.substr(0,coordenadas.length - 1);
-					coordenadasTotal='['+coordenadas+']';
-					ruta(coordenadasTotal, usuario);
-				 });
-				
-				
-				function ruta(coordenadasTodas, usuario){
-				
-                // setup the ajax request
-                $.ajax({
-						url: url,
-					    type: 'post',
-                        cache: false,
-                        url: url,
-                        //data: $form.serialize(),
-                        data: {'datos': coordenadasTodas, 'user': usuario},
-                        //dataType: 'json',
-                        dataType: 'text',
-                        beforeSend: function() {
-      
-                        },
-                        error: function(response) {
-						console.log('ERROR: '+response);
-						alert('Error ajax')
-                        },
-                        success: function(response) {
-							console.log('petición enviada....')
-							console.log('respuesta: '+response);
-							$('.datos-textarea').val('');
-                        }
-					
-					
-                });
-	
-                // return false so the form does not actually
-                // submit to the page
-                //return false;
-
-            }
-			
-    });          
-			
-        </script>
-
-    </head>
-    <body>	
-			<img class='bici-jpg' src='img/guy-allen.jpg'>
-			<img class='bici-gif' src='img/guy-allen.gif'>
-
-            <textarea class='datos-textarea' id='datos-id'></textarea>
-			<div class='enviar-datos'>Enviar Datos</div>
+<div class='modal'>
+<p></p>
+<button class='botones-modal siOK' type="button">Sí</button>
+<button class='botones-modal noOK' type="button">No</button>
+</div>
 
 
-    </body>
+
+
+<!-- include the jquery lib -->
+<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="js/main.min.js"></script>
+
+
+<script type="text/javascript">
+   
+		
+$(document).ready(function() {
+
+	iniciar();
+
+});
+
+</script>
+
+</body>
+</html>
 </html>
