@@ -5,6 +5,10 @@ body {
   font-family: Arial;
   font-size: 16px;
 }
+.seccion-ruta,
+.seccion-usuario {
+  display: none;
+}
 .botones-ruta {
   display: none;
   text-align: center;

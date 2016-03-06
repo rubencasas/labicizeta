@@ -1,6 +1,380 @@
 // Utlizaremos una función anónima autoejecutable de modo que nuestras variables no sean globales. Más info: http://www.formandome.es/javascript/objetos-variables-funciones-javascript/
 
+
+function mensajes(texto){
+  $('.mensajes p').text('');
+  $('.mensajes p').text(texto);
+}
+
+
 function iniciar(){
+
+  var localStorageBoleano;
+  var ids=[];
+  var nombres=[];
+  var emails=[];
+  var passwords=[];
+  var nombreExisteBoleano=false
+  var emailExisteBoleano=false
+  var coincidenPassBoleano=true;
+  var emailCorrectoBoleano=false;
+  var coincidenNombreEmailPasswordBoleano= false;
+
+  var inputNombre=$('.seccion-usuario .nombre input');
+  var inputEmail=$('.seccion-usuario .email input');
+  var inputPass=$('.seccion-usuario .password input');
+  var inputPassRepetir=$('.seccion-usuario .password-repetir input');
+
+
+
+  function consultarNombresEmailsPasswords(){
+   var url = 'http://www.lasana.es/labicizeta/php/consulta-usuarios.php';
+
+   $.ajax({ url: url,
+       type: 'post',
+      dataType: 'json', // will automatically convert array to JavaScript 
+      beforeSend: function() {
+      },
+      error: function(response) {
+       console.log('ERROR: '+response);
+       mensajes('Ha habido un problema con la conexión, inténtalo de nuevo.');
+     },
+     success: function(response) {
+      for(var i=0;i<response.length;i++){
+        var obj = response[i];
+        for(var key in obj){
+          if(key==='id'){
+            ids.push(obj[key]);
+          }
+          if(key==='nombre'){
+            nombres.push(obj[key]);
+          }
+          if(key==='email'){
+            emails.push(obj[key]);
+          }
+           if(key==='password'){
+            passwords.push(obj[key]);
+          }
+        }
+     }
+     }
+   });
+ }
+
+
+function nombreExiste(){
+  nombreExisteBoleano=false;
+  for(var i=0;i< nombres.length;i++) {
+    if(inputNombre.val().toUpperCase() === nombres[i].toUpperCase()){
+      mensajes("Nombre ocupado");
+      nombreExisteBoleano=true;
+      break;
+    }
+  }
+ console.log( nombreExisteBoleano);
+}
+
+function emailExiste(){
+  emailExisteBoleano=false;
+  for(var i=0;i< emails.length;i++) {
+    if(inputEmail.val().toUpperCase() === emails[i].toUpperCase()){
+        if($('.usuario-crear').is(':visible')){
+      mensajes("Email existe");
+    }
+      emailExisteBoleano=true;
+      break;
+    }
+  }
+ console.log( emailExisteBoleano);
+}
+
+function coincidenPass(){
+  coincidenPassBoleano=true;
+    if(inputPass.val() !== inputPassRepetir.val()){
+      mensajes("No coinciden las contraseñas");
+      coincidenPassBoleano=false;
+  }
+ console.log(coincidenPassBoleano);
+}
+
+function coincidenNombreEmailPassword(){
+  var nombreExiste=$.inArray( inputNombre.val().toLowerCase(), nombres );
+  var emailExiste=$.inArray( inputNombre.val().toLowerCase(),emails );
+  console.log(emailExiste);
+ if((nombreExiste>=0 && passwords[nombreExiste]=== inputPass.val())||(emailExiste>=0 && passwords[emailExiste]=== inputPass.val())){
+        coincidenNombreEmailPasswordBoleano=true;
+ }else{
+     mensajes('Usuario, email o contraseña no válidos');
+      coincidenNombreEmailPasswordBoleano=false;
+ }
+  
+}
+
+function isEmail(email) {
+  var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+  emailCorrectoBoleano=regex.test(email);
+  console.log(email+regex.test(email));
+  if(!emailCorrectoBoleano){
+      mensajes("Email incorrecto");
+  }
+}
+
+function registrarUsuario(){
+ var url = 'http://www.lasana.es/labicizeta/php/registrar-usuario.php';
+
+ $.ajax({
+  url: url,
+  type: 'post',
+  cache: false,
+  //data: $form.serialize(),
+  data: {'nombre': inputNombre.val().toLowerCase(), 'email': inputEmail.val().toLowerCase(), 'pass': inputPass.val()},
+  //dataType: 'json',
+  dataType: 'text',
+  beforeSend: function() {
+    mensajes('Registrando...');
+  },
+  error: function(response) {
+   console.log('ERROR: '+response);
+   mensajes('Ha habido un problema con la conexión, inténtalo de nuevo.');
+ },
+ success: function(response) {
+   console.log('respuesta: '+response);
+   mensajes(response);
+ }
+});
+
+}
+
+function entrarUsuario(){
+ var url = 'http://www.lasana.es/labicizeta/php/entrar-usuario.php';
+
+ $.ajax({
+  url: url,
+  type: 'post',
+  cache: false,
+  //data: $form.serialize(),
+  data: {'nombre': inputNombre.val().toLowerCase()},
+  //dataType: 'json',
+  dataType: 'text',
+  beforeSend: function() {
+    mensajes('Accediendo...');
+  },
+  error: function(response) {
+   console.log('ERROR: '+response);
+   mensajes('Ha habido un problema con la conexión, inténtalo de nuevo.');
+ },
+ success: function(response) {
+   console.log('respuesta: '+response);
+   mensajes(response);
+   localStorageFunction(inputNombre.val().toLowerCase());
+ }
+});
+
+}
+
+
+function localStorageFunction(usuario){
+
+  var nombreExiste=$.inArray( usuario, nombres );
+  var emailExiste=$.inArray( usuario, emails );
+  console.log('nombre'+nombreExiste);
+    console.log('email'+emailExiste);
+  var mostrarNombre=(nombreExiste>=0)?nombres[nombreExiste]:nombres[emailExiste];
+  var idCual=(nombreExiste>=0)?nombreExiste:emailExiste;
+  console.log( ids[idCual]);
+  localStorage.setItem("usuario", mostrarNombre);
+  localStorage.setItem("identificador", ids[idCual]);
+  comprobarlocalStorage();
+}
+
+
+
+
+ function crearIntro(){
+     mensajes('');
+    $('.seccion-usuario').show();
+     $('.seccion-usuario li, .seccion-usuario button').show();
+    $('.seccion-usuario li, .seccion-usuario button').not('.clase-crear').hide();
+    $('.seccion-usuario .nombre input').attr('placeholder','Nombre usuario');
+    $('.seccion-intro').hide();
+}
+
+ function entrarIntro(){
+    $('.seccion-usuario').show();
+    $('.seccion-usuario li, .seccion-usuario button').show();
+    $('.seccion-usuario li, .seccion-usuario button').not('.clase-entrar').hide();
+    $('.seccion-usuario .nombre input').attr('placeholder','Nombre usuario o email');
+    $('.seccion-intro').hide(); 
+}
+
+
+ function recordarIntro(){
+    $('.seccion-usuario').show();
+    $('.seccion-usuario li, .seccion-usuario button').show();
+    $('.seccion-usuario li, .seccion-usuario button').not('.clase-recordar').hide();
+    $('.seccion-intro').hide();
+ }
+
+ function atrasIntro(){
+     $('.seccion-usuario').hide();
+    $('.seccion-intro').show();
+  }
+
+function resetIntro(){
+  mensajes('');
+  inputNombre.val('');
+  inputEmail.val('')
+  inputPass.val('')
+  inputPassRepetir.val('')
+}
+
+
+
+ function comprobarlocalStorage(){
+  
+  if (localStorage.identificador){
+      localStorageBoleano=true;
+      console.log('LocalStorage SI');
+      mensajes('Bienvenido/a '+  localStorage.getItem("usuario"));
+       ventanaRutas();
+
+  }else{
+       localStorageBoleano=false;
+        consultarNombresEmailsPasswords();
+      console.log('LocalStorage NO');
+  }
+
+}
+
+
+
+function ventanaRutas(){
+      $('.seccion-intro,.seccion-usuario').hide();
+      $('.seccion-ruta').show();
+      rutaSeccion();
+}
+
+function ventanaIntro(){
+      resetIntro();
+      $('.seccion-intro').show();
+      $('.seccion-ruta').hide();
+      comprobarlocalStorage();
+}
+
+
+
+comprobarlocalStorage();
+
+
+//EVENTOS
+
+inputNombre.on('focusout',function(){
+  if($('.usuario-crear').is(':visible')){
+      nombreExiste();
+    }
+});
+
+inputEmail.on('focusout',function(){
+  emailExiste();
+});
+
+
+//crear-intro
+$('.intro-crear').on('click',function(){
+  resetIntro();
+  crearIntro();
+});
+
+//entrar-intro
+$('.intro-entrar').on('click',function(){
+  resetIntro();
+  entrarIntro();
+});
+
+//recordar-intro
+$('.intro-recordar').on('click',function(){
+  resetIntro();
+  recordarIntro();
+});
+
+
+//atras-usuario
+$('.usuario-atras').on('click',function(){
+  resetIntro();
+  atrasIntro();
+});
+
+//atras-usuario
+$('.usuario-salir').on('click',function(){
+  localStorage.removeItem('identificador');
+    localStorage.removeItem('usuario');
+  ventanaIntro();
+});
+
+
+//registrar usuario
+$('.usuario-crear').on('click',function(){
+  if(inputNombre.val()==null || inputNombre.val()=='', inputEmail.val()==null || inputEmail.val()=='', inputPass.val()==null || inputPass.val()==''){
+      mensajes('Rellena todos los campos');
+  }else{
+      mensajes('');
+      coincidenPass();
+      isEmail(inputEmail.val());
+      if(coincidenPassBoleano && !nombreExisteBoleano && !emailExisteBoleano && emailCorrectoBoleano){
+        console.log('REGISTRAR');
+        registrarUsuario();
+      }else{
+          nombreExiste();
+          emailExiste();
+          coincidenPass();
+      }
+  }
+
+ 
+});
+
+//entrar usuario
+$('.usuario-entrar').on('click',function(){
+  if(inputNombre.val()==null || inputNombre.val()=='', inputPass.val()==null || inputPass.val()==''){
+      mensajes('Rellena todos los campos');
+  }else{
+      mensajes('');
+      coincidenNombreEmailPassword();
+      if(coincidenNombreEmailPasswordBoleano){
+        console.log('ENTRAR');
+         entrarUsuario();
+      }
+  }
+
+ 
+});
+
+//recordar usuario
+$('.usuario-recordar').on('click',function(){
+  if(inputEmail.val()==null || inputEmail.val()==''){
+      mensajes('Introduce un email');
+  }else{
+      mensajes('');
+      if(emailExisteBoleano){
+        console.log('RECORDAR');
+      }else{  
+           mensajes('No existe ningún usuario con ese email');
+      }
+  }
+
+ 
+});
+
+
+
+
+
+}// end iniciar()
+
+
+
+
+function rutaSeccion(){
 //(function () {
   /* ---------------------------------- Variables locales ---------------------------------- */
     //var adapter = new WebSqlAdapter();
@@ -16,9 +390,9 @@ function iniciar(){
     var latitudNueva,latitudVieja,longitudNueva,longitudVieja,distanciaParcial, distanciaTotal=0, CO2parcial, CO2total=0;
     var cronometroIntervalo;
     var tiempo = {
-        hora: 0,
-        minuto: 0,
-        segundo: 0
+      hora: 0,
+      minuto: 0,
+      segundo: 0
     };
     var textosBotones={
       empezar:'PEDALEAR',
@@ -33,7 +407,7 @@ function iniciar(){
     });
 */
 
-console.log('INICIADO')
+console.log('INICIADO id='+ localStorage.getItem("identificador"))
 
 $('.start-stop').text(textosBotones.empezar);
 
@@ -41,14 +415,14 @@ $('.start-stop').text(textosBotones.empezar);
 
 //FUNCIONES
 
-  /** Converts numeric degrees to radians */
-  if (typeof(Number.prototype.toRad) === "undefined") {
-    Number.prototype.toRad = function() {
-      return this * Math.PI / 180;
-    }
+/** Converts numeric degrees to radians */
+if (typeof(Number.prototype.toRad) === "undefined") {
+  Number.prototype.toRad = function() {
+    return this * Math.PI / 180;
   }
+}
 
-  function calcularDistancia(lat1,lat2,lon1,lon2){
+function calcularDistancia(lat1,lat2,lon1,lon2){
   var R = 6371; // km
   var dLat = (lat2-lat1).toRad();
   var dLon = (lon2-lon1).toRad();
@@ -67,26 +441,26 @@ $('.start-stop').text(textosBotones.empezar);
 
 function iniciarCronometro(){
 
-cronometroIntervalo = setInterval(function(){
+  cronometroIntervalo = setInterval(function(){
                 // Segundos
                 tiempo.segundo++;
                 if(tiempo.segundo >= 60)
                 {
-                    tiempo.segundo = 0;
-                    tiempo.minuto++;
+                  tiempo.segundo = 0;
+                  tiempo.minuto++;
                 }      
 
                 // Minutos
                 if(tiempo.minuto >= 60)
                 {
-                    tiempo.minuto = 0;
-                    tiempo.hora++;
+                  tiempo.minuto = 0;
+                  tiempo.hora++;
                 }
 
                 $(".hour").text(tiempo.hora < 10 ? '0' + tiempo.hora : tiempo.hora);
                 $(".minute").text(tiempo.minuto < 10 ? '0' + tiempo.minuto : tiempo.minuto);
                 $(".second").text(tiempo.segundo < 10 ? '0' + tiempo.segundo : tiempo.segundo);
-            }, 1000);
+              }, 1000);
 }
 
 
@@ -160,7 +534,7 @@ function localizar() {
 
 function guardarRuta(){
  var url = 'http://www.lasana.es/labicizeta/php/guardar-ruta.php';
-  var usuario=1;
+ var usuario=1;
  
  //eliminar ultima coma del objeto
  coordenadasTodas=coordenadas.html();
@@ -174,21 +548,21 @@ function guardarRuta(){
   data: {'datos': coordenadasTodas, 'user': usuario, 'distancia': distanciaTotal},
   //dataType: 'json',
   dataType: 'text',
-   beforeSend: function() {
-      mensajes('Enviando ruta...');
+  beforeSend: function() {
+    mensajes('Enviando ruta...');
   },
-   error: function(response) {
+  error: function(response) {
    console.log('ERROR: '+response);
-    mensajes('Ha habido un problema con la conexión, inténtalo de nuevo.');
-   },
-   success: function(response) {
+   mensajes('Ha habido un problema con la conexión, inténtalo de nuevo.');
+ },
+ success: function(response) {
    console.log('respuesta: '+response);
-    mensajes('Datos recibidos. ¡Gracias!');
-     resetRuta();
-     }
+   mensajes(response);
+   resetRuta();
+ }
 
 
-    });
+});
 
 }
 
@@ -211,55 +585,55 @@ function enZamora(lati,longi){
 
 
 function empezar(){
-   console.log(textosBotones.empezar);
-        $('.start-stop').text(textosBotones.parar);
-        $('.bici-jpg').hide();
-        $('.bici-gif,.datos').show();
-        iniciarCronometro();
-        localizar();
-        $('.botones-ruta').hide();
-        cogiendoDatos=true;
+ console.log(textosBotones.empezar);
+ $('.start-stop').text(textosBotones.parar);
+ $('.bici-jpg').hide();
+ $('.bici-gif,.datos').show();
+ iniciarCronometro();
+ localizar();
+ $('.botones-ruta').hide();
+ cogiendoDatos=true;
 }
 
 function parar(){
-        console.log("STOP");
-        $('.start-stop').text(textosBotones.empezar);
-        $('.bici-gif').hide();
-        $('.bici-jpg').show();
-        clearInterval(cronometroIntervalo);
-        localizarStop();
-        $('.botones-ruta').show();
-        cogiendoDatos=false;
+  console.log("STOP");
+  $('.start-stop').text(textosBotones.empezar);
+  $('.bici-gif').hide();
+  $('.bici-jpg').show();
+  clearInterval(cronometroIntervalo);
+  localizarStop();
+  $('.botones-ruta').show();
+  cogiendoDatos=false;
 }
 
 function resetRuta(){
-        distanciaParcial=0;
-        distanciaTotal=0;
-        CO2parcial=0;
-        CO2total=0;
-        latitudNueva=0;
-        longitudNueva=0;
-        $('.coordenadas-textarea').html('');
-        $(".hour").text('00');
-        $(".minute").text('00');
-        $(".second").text('00');
-        $('.botones-ruta').hide();
-        tiempo = {
-        hora: 0,
-        minuto: 0,
-        segundo: 0
-         };
-        $('.datos').hide();
+  distanciaParcial=0;
+  distanciaTotal=0;
+  CO2parcial=0;
+  CO2total=0;
+  latitudNueva=0;
+  longitudNueva=0;
+  $('.coordenadas-textarea').html('');
+  $(".hour").text('00');
+  $(".minute").text('00');
+  $(".second").text('00');
+  $('.botones-ruta').hide();
+  tiempo = {
+    hora: 0,
+    minuto: 0,
+    segundo: 0
+  };
+  $('.datos').hide();
 }
 
 
 
 function modal(ok,cancel,pregunta){
 
-$('.modal p').text(pregunta);
-$('.modal').show();
-okFuncion=function(){ok();}
-cancelFuncion=function(){cancel();}
+  $('.modal p').text(pregunta);
+  $('.modal').show();
+  okFuncion=function(){ok();}
+  cancelFuncion=function(){cancel();}
 
 }
 
@@ -268,49 +642,45 @@ function cerrarModal(){
 }
 
 
-function mensajes(texto){
-  $('.mensajes p').text('');
-  $('.mensajes p').text(texto);
-}
 
 
 
 
  //EVENTOS
 
-  $('.start-stop').on('click',function(){
-      if(!cogiendoDatos){
-       empezar();
-        return false;
-    }else{
-        parar();
-        return false;
-    }
-  });
+ $('.start-stop').on('click',function(){
+  if(!cogiendoDatos){
+   empezar();
+   return false;
+ }else{
+  parar();
+  return false;
+}
+});
 
 
-  $('.guardar-ruta').on('click',function(){
-    modal(guardarRuta,cerrarModal,'¿Seguro que quieres mandarnos los datos de tu ruta?');
-    return false;
-  });
+ $('.guardar-ruta').on('click',function(){
+  modal(guardarRuta,cerrarModal,'¿Seguro que quieres mandarnos los datos de tu ruta?');
+  return false;
+});
 
-    $('.reset-ruta').on('click',function(){
-    modal(resetRuta,cerrarModal,'¿Seguro que quieres eliminar los datos de tu ruta?');
-    return false;
-  });
-
-
-  $('.modal .siOK').on('click', function(){
-    okFuncion();
-    cerrarModal();
-    return false;
-  });
-  $('.modal .noOK').on('click', function(){
-    cancelFuncion();
-    return false;
-  });
+ $('.reset-ruta').on('click',function(){
+  modal(resetRuta,cerrarModal,'¿Seguro que quieres eliminar los datos de tu ruta?');
+  return false;
+});
 
 
+ $('.modal .siOK').on('click', function(){
+  okFuncion();
+  cerrarModal();
+  return false;
+});
+ $('.modal .noOK').on('click', function(){
+  cancelFuncion();
+  return false;
+});
 
- }; //end iniciar()
+
+
+ }; //end rutaSeccion()
 //}());
